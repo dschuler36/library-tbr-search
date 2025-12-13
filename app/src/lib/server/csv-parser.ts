@@ -33,6 +33,9 @@ export async function parseStoryGraphCSV(fileContent: string): Promise<Book[]> {
 						}
 					}
 
+					// Explicitly clear the results data to free memory
+					results.data.length = 0;
+
 					resolve(books);
 				} catch (error) {
 					reject(error);

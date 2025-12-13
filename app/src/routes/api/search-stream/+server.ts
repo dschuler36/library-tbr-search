@@ -5,7 +5,7 @@ import { isFormatExcluded } from '$lib/utils/formats';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		const { books, selectedFormats = [] } = await request.json();
+		let { books, selectedFormats = [] } = await request.json();
 
 		if (!books || !Array.isArray(books)) {
 			return new Response(JSON.stringify({ error: 'Invalid books array' }), {
@@ -13,6 +13,9 @@ export const POST: RequestHandler = async ({ request }) => {
 				headers: { 'Content-Type': 'application/json' }
 			});
 		}
+
+		// Store book count before processing
+		const bookCount = books.length;
 
 		// Create a ReadableStream for Server-Sent Events
 		const stream = new ReadableStream({
@@ -27,7 +30,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				const client = new BiblioCommonsClient();
 				const results: SearchResult[] = [];
 
-				console.log(`Starting search for ${books.length} books...`);
+				console.log(`Starting search for ${bookCount} books...`);
 
 				for (let i = 0; i < books.length; i++) {
 					const book: Book = books[i];
@@ -108,16 +111,22 @@ export const POST: RequestHandler = async ({ request }) => {
 					}
 				}
 
+				// Clear books array to free memory
+				books.length = 0;
+
 				const availableCount = results.filter((r) => r.libraryMatch?.status === 'AVAILABLE')
 					.length;
-				console.log(`\n✅ Search complete! ${availableCount}/${books.length} books available\n`);
+				console.log(`\n✅ Search complete! ${availableCount}/${bookCount} books available\n`);
 
 				// Send complete event with results
 				sendEvent('complete', {
 					results,
-					processed: books.length,
-					total: books.length
+					processed: bookCount,
+					total: bookCount
 				});
+
+				// Clear results to free memory
+				results.length = 0;
 
 				controller.close();
 			}

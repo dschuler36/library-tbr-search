@@ -50,45 +50,51 @@
 
 			let buffer = "";
 
-			while (true) {
-				const { done, value } = await reader.read();
+			try {
+				while (true) {
+					const { done, value } = await reader.read();
 
-				if (done) break;
+					if (done) break;
 
-				buffer += decoder.decode(value, { stream: true });
-				const lines = buffer.split("\n\n");
-				buffer = lines.pop() || "";
+					buffer += decoder.decode(value, { stream: true });
+					const lines = buffer.split("\n\n");
+					buffer = lines.pop() || "";
 
-				for (const line of lines) {
-					if (!line.trim()) continue;
+					for (const line of lines) {
+						if (!line.trim()) continue;
 
-					const eventMatch = line.match(/^event: (\w+)\n/);
-					const dataMatch = line.match(/^data: (.+)$/m);
+						const eventMatch = line.match(/^event: (\w+)\n/);
+						const dataMatch = line.match(/^data: (.+)$/m);
 
-					if (eventMatch && dataMatch) {
-						const event = eventMatch[1];
-						const data = JSON.parse(dataMatch[1]);
+						if (eventMatch && dataMatch) {
+							const event = eventMatch[1];
+							const data = JSON.parse(dataMatch[1]);
 
-						if (event === "progress") {
-							// Update progress with current book info
-							searchState.update((s) => ({
-								...s,
-								progress: {
-									current: data.current,
-									total: data.total,
-									currentBook: data.book,
-								},
-							}));
-						} else if (event === "complete") {
-							// Update with final results
-							searchState.update((s) => ({
-								...s,
-								searchResults: data.results,
-								isSearching: false,
-							}));
+							if (event === "progress") {
+								// Update progress with current book info
+								searchState.update((s) => ({
+									...s,
+									progress: {
+										current: data.current,
+										total: data.total,
+										currentBook: data.book,
+									},
+								}));
+							} else if (event === "complete") {
+								// Update with final results
+								searchState.update((s) => ({
+									...s,
+									searchResults: data.results,
+									isSearching: false,
+								}));
+							}
 						}
 					}
 				}
+			} finally {
+				// Ensure reader is released and buffer is cleared
+				reader.releaseLock();
+				buffer = "";
 			}
 		} catch (error) {
 			searchError =

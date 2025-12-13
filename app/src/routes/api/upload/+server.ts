@@ -17,10 +17,13 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 		// Read file content
-		const fileContent = await file.text();
+		let fileContent: string | null = await file.text();
 
 		// Parse CSV
 		const books = await parseStoryGraphCSV(fileContent);
+
+		// Explicitly clear file content to free memory
+		fileContent = null;
 
 		return json({
 			books,
