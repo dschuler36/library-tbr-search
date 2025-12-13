@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.cincinnatilibrary.org)",
+      "WebFetch(domain:chpl.org)",
+      "WebFetch(domain:cincinnatilibrary.bibliocommons.com)",
+      "WebFetch(domain:developer.bibliocommons.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:biblioottawalibrary.ca)",
+      "WebFetch(domain:about.biblioottawalibrary.ca)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(tree:*)",
+      "Bash(head:*)",
+      "Bash(npm create:*)",
+      "Bash(npx sv create:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(./node_modules/.bin/tailwindcss:*)",
+      "Bash(npm uninstall:*)"
+    ]
+  }
+}
