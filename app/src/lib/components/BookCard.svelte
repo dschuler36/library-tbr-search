@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { SearchResult } from '$lib/types';
+	import { getFormatDisplayName } from '$lib/utils/formats';
 
 	let { result }: { result: SearchResult } = $props();
 
@@ -40,7 +41,7 @@
 						<div class="flex items-center gap-2 mb-1 flex-wrap">
 							<h3 class="card-title text-lg">{result.book.title}</h3>
 							{#if result.libraryMatch}
-								<div class="badge badge-outline badge-sm">{result.libraryMatch.format}</div>
+								<div class="badge badge-outline badge-sm">{getFormatDisplayName(result.libraryMatch.format)}</div>
 							{/if}
 						</div>
 						<p class="text-sm opacity-70">by {result.book.authors}</p>

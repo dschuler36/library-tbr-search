@@ -11,7 +11,8 @@ export const searchState = writable<SearchState>({
 		formats: [],
 		showOnlyAvailable: false,
 		sortBy: 'availability'
-	}
+	},
+	selectedFormats: ['BK', 'LP_BK'] // Default: Books and Large Print
 });
 
 // Derived store for filtered and sorted results

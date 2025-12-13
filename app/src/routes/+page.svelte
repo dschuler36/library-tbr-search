@@ -1,19 +1,23 @@
 <script lang="ts">
 	import FileUpload from "$lib/components/FileUpload.svelte";
+	import FormatSelection from "$lib/components/FormatSelection.svelte";
 	import SearchProgress from "$lib/components/SearchProgress.svelte";
 	import FilterPanel from "$lib/components/FilterPanel.svelte";
 	import ResultsTable from "$lib/components/ResultsTable.svelte";
 	import { searchState } from "$lib/stores/search";
 
 	let searchError = $state<string | null>(null);
+	let showFormatSelection = $state<boolean>(false);
 
 	async function handleFileUploaded() {
-		// Automatically start search after file upload
-		await startSearch();
+		// Show format selection after file upload instead of starting search
+		showFormatSelection = true;
 	}
 
 	async function startSearch() {
 		searchError = null;
+		showFormatSelection = false; // Hide format selection when search starts
+
 		searchState.update((s) => ({
 			...s,
 			isSearching: true,
@@ -22,11 +26,14 @@
 		}));
 
 		try {
-			// Use fetch to POST the books data
+			// Use fetch to POST the books data with selected formats
 			const response = await fetch("/api/search-stream", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ books: $searchState.uploadedBooks }),
+				body: JSON.stringify({
+					books: $searchState.uploadedBooks,
+					selectedFormats: $searchState.selectedFormats
+				}),
 			});
 
 			if (!response.ok) {
@@ -106,8 +113,10 @@
 				showOnlyAvailable: false,
 				sortBy: "availability",
 			},
+			selectedFormats: ['BK', 'LP_BK'] // Reset to default formats
 		}));
 		searchError = null;
+		showFormatSelection = false;
 	}
 </script>
 
@@ -123,7 +132,7 @@
 		</div>
 
 		<!-- Main Content -->
-		{#if $searchState.uploadedBooks.length === 0 && !$searchState.isSearching}
+		{#if $searchState.uploadedBooks.length === 0 && !$searchState.isSearching && !showFormatSelection}
 			<div class="space-y-6">
 				<FileUpload onUploaded={handleFileUploaded} />
 				
@@ -143,6 +152,8 @@
 					</div>
 				</div>
 			</div>
+		{:else if showFormatSelection && !$searchState.isSearching}
+			<FormatSelection onStartSearch={startSearch} />
 		{:else if $searchState.isSearching}
 			<SearchProgress
 				current={$searchState.progress.current}

@@ -43,4 +43,5 @@ export interface SearchState {
 	isSearching: boolean;
 	progress: { current: number; total: number; currentBook?: string };
 	filters: SearchFilters;
+	selectedFormats: string[]; // User-selected formats for search
 }

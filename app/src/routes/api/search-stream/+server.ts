@@ -1,10 +1,11 @@
 import { BiblioCommonsClient } from '$lib/server/bibliocommons';
 import type { RequestHandler } from './$types';
 import type { Book, SearchResult } from '$lib/types';
+import { isFormatExcluded } from '$lib/utils/formats';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		const { books } = await request.json();
+		const { books, selectedFormats = [] } = await request.json();
 
 		if (!books || !Array.isArray(books)) {
 			return new Response(JSON.stringify({ error: 'Invalid books array' }), {
@@ -49,16 +50,20 @@ export const POST: RequestHandler = async ({ request }) => {
 							continue;
 						}
 
-						// Filter out unwanted formats (DVDs, EBooks, Graphic Novels)
-						const unwantedFormats = ['DVD', 'BLU-RAY', 'EBOOK', 'EAUDIOBOOK', 'GRAPHIC_NOVEL', 'GRAPHIC NOVEL'];
+						// Filter by user-selected formats (also excludes DVDs and eBooks)
 						const acceptableResults = searchResults.filter((result: any) => {
 							const format = result.briefInfo?.format || '';
-							const formatUpper = format.toUpperCase();
-							return !unwantedFormats.some(unwanted => formatUpper.includes(unwanted));
+							return !isFormatExcluded(format, selectedFormats);
 						});
 
-						// Use acceptable result if available, otherwise fall back to first result
-						const topResult = acceptableResults.length > 0 ? acceptableResults[0] : searchResults[0];
+						// If no acceptable results, skip this book
+						if (acceptableResults.length === 0) {
+							console.log(`  ❌ No matching format found (filtered out)`);
+							results.push({ book, libraryMatch: null });
+							continue;
+						}
+
+						const topResult = acceptableResults[0];
 						const bibId = topResult.id;
 						const briefInfo = topResult.briefInfo || {};
 
