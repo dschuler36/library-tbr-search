@@ -1,9 +1,9 @@
 <script lang="ts">
-	import FileUpload from '$lib/components/FileUpload.svelte';
-	import SearchProgress from '$lib/components/SearchProgress.svelte';
-	import FilterPanel from '$lib/components/FilterPanel.svelte';
-	import ResultsTable from '$lib/components/ResultsTable.svelte';
-	import { searchState } from '$lib/stores/search';
+	import FileUpload from "$lib/components/FileUpload.svelte";
+	import SearchProgress from "$lib/components/SearchProgress.svelte";
+	import FilterPanel from "$lib/components/FilterPanel.svelte";
+	import ResultsTable from "$lib/components/ResultsTable.svelte";
+	import { searchState } from "$lib/stores/search";
 
 	let searchError = $state<string | null>(null);
 
@@ -18,19 +18,19 @@
 			...s,
 			isSearching: true,
 			searchResults: [],
-			progress: { current: 0, total: $searchState.uploadedBooks.length }
+			progress: { current: 0, total: $searchState.uploadedBooks.length },
 		}));
 
 		try {
 			// Use fetch to POST the books data
-			const response = await fetch('/api/search-stream', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ books: $searchState.uploadedBooks })
+			const response = await fetch("/api/search-stream", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ books: $searchState.uploadedBooks }),
 			});
 
 			if (!response.ok) {
-				throw new Error('Search failed to start');
+				throw new Error("Search failed to start");
 			}
 
 			// Read the SSE stream
@@ -38,10 +38,10 @@
 			const decoder = new TextDecoder();
 
 			if (!reader) {
-				throw new Error('No response stream');
+				throw new Error("No response stream");
 			}
 
-			let buffer = '';
+			let buffer = "";
 
 			while (true) {
 				const { done, value } = await reader.read();
@@ -49,8 +49,8 @@
 				if (done) break;
 
 				buffer += decoder.decode(value, { stream: true });
-				const lines = buffer.split('\n\n');
-				buffer = lines.pop() || '';
+				const lines = buffer.split("\n\n");
+				buffer = lines.pop() || "";
 
 				for (const line of lines) {
 					if (!line.trim()) continue;
@@ -62,32 +62,33 @@
 						const event = eventMatch[1];
 						const data = JSON.parse(dataMatch[1]);
 
-						if (event === 'progress') {
+						if (event === "progress") {
 							// Update progress with current book info
 							searchState.update((s) => ({
 								...s,
 								progress: {
 									current: data.current,
 									total: data.total,
-									currentBook: data.book
-								}
+									currentBook: data.book,
+								},
 							}));
-						} else if (event === 'complete') {
+						} else if (event === "complete") {
 							// Update with final results
 							searchState.update((s) => ({
 								...s,
 								searchResults: data.results,
-								isSearching: false
+								isSearching: false,
 							}));
 						}
 					}
 				}
 			}
 		} catch (error) {
-			searchError = error instanceof Error ? error.message : 'Search failed';
+			searchError =
+				error instanceof Error ? error.message : "Search failed";
 			searchState.update((s) => ({
 				...s,
-				isSearching: false
+				isSearching: false,
 			}));
 		}
 	}
@@ -101,9 +102,10 @@
 			progress: { current: 0, total: 0 },
 			filters: {
 				branches: [],
+				formats: [],
 				showOnlyAvailable: false,
-				sortBy: 'availability'
-			}
+				sortBy: "availability",
+			},
 		}));
 		searchError = null;
 	}
@@ -115,13 +117,32 @@
 		<div class="text-center mb-8">
 			<h1 class="text-5xl font-bold mb-4">📚 Library TBR Search</h1>
 			<p class="text-lg opacity-80">
-				Find which books from your Storygraph TBR are available at Cincinnati Public Library
+				Find which books from your Storygraph TBR are available at
+				Cincinnati Public Library.
 			</p>
 		</div>
 
 		<!-- Main Content -->
 		{#if $searchState.uploadedBooks.length === 0 && !$searchState.isSearching}
-			<FileUpload onUploaded={handleFileUploaded} />
+			<div class="space-y-6">
+				<FileUpload onUploaded={handleFileUploaded} />
+				
+				<!-- Usage Instructions -->
+				<div class="card bg-base-100 shadow-xl">
+					<div class="card-body">
+						<h2 class="card-title text-xl mb-2">How to get started</h2>
+						<div class="prose prose-sm max-w-none">
+							<ol class="list-decimal list-inside space-y-2 text-base opacity-80">
+								<li>Go to <a href="https://app.thestorygraph.com/user-export" target="_blank" class="link link-primary">app.thestorygraph.com/user-export</a></li>
+								<li>Click on <strong>Generate export</strong></li>
+								<li>Wait for the download link to become available</li>
+								<li>Download the CSV file</li>
+								<li>Upload it above!</li>
+							</ol>
+						</div>
+					</div>
+				</div>
+			</div>
 		{:else if $searchState.isSearching}
 			<SearchProgress
 				current={$searchState.progress.current}
@@ -148,8 +169,12 @@
 						<span>{searchError}</span>
 					</div>
 					<div class="card-actions justify-center gap-4 mt-4">
-						<button class="btn btn-primary" onclick={startSearch}>Try Again</button>
-						<button class="btn btn-ghost" onclick={reset}>Start Over</button>
+						<button class="btn btn-primary" onclick={startSearch}
+							>Try Again</button
+						>
+						<button class="btn btn-ghost" onclick={reset}
+							>Start Over</button
+						>
 					</div>
 				</div>
 			</div>

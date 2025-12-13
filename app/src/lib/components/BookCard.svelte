@@ -37,7 +37,12 @@
 			<div class="flex-1 min-w-0">
 				<div class="flex justify-between items-start gap-4 mb-3">
 					<div class="flex-1">
-						<h3 class="card-title text-lg">{result.book.title}</h3>
+						<div class="flex items-center gap-2 mb-1 flex-wrap">
+							<h3 class="card-title text-lg">{result.book.title}</h3>
+							{#if result.libraryMatch}
+								<div class="badge badge-outline badge-sm">{result.libraryMatch.format}</div>
+							{/if}
+						</div>
 						<p class="text-sm opacity-70">by {result.book.authors}</p>
 					</div>
 
@@ -50,10 +55,6 @@
 
 				{#if result.libraryMatch}
 					<div class="space-y-2">
-						<div class="flex items-center gap-2 text-sm">
-							<span class="font-medium">Format:</span>
-							<span>{result.libraryMatch.format}</span>
-						</div>
 
 						<div class="flex items-center gap-2 text-sm">
 							<span class="font-medium">Copies:</span>

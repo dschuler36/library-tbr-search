@@ -41,7 +41,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 					try {
 						// Search for the book
-						const searchResults = await client.search(`${book.title} ${book.authors}`, 3);
+						const searchResults = await client.search(`${book.title} ${book.authors}`, 10);
 
 						if (searchResults.length === 0) {
 							console.log(`  ❌ Not found in catalog`);
@@ -49,8 +49,16 @@ export const POST: RequestHandler = async ({ request }) => {
 							continue;
 						}
 
-						// Get the first (most relevant) result
-						const topResult = searchResults[0];
+						// Filter out unwanted formats (DVDs, EBooks, Graphic Novels)
+						const unwantedFormats = ['DVD', 'BLU-RAY', 'EBOOK', 'EAUDIOBOOK', 'GRAPHIC_NOVEL', 'GRAPHIC NOVEL'];
+						const acceptableResults = searchResults.filter((result: any) => {
+							const format = result.briefInfo?.format || '';
+							const formatUpper = format.toUpperCase();
+							return !unwantedFormats.some(unwanted => formatUpper.includes(unwanted));
+						});
+
+						// Use acceptable result if available, otherwise fall back to first result
+						const topResult = acceptableResults.length > 0 ? acceptableResults[0] : searchResults[0];
 						const bibId = topResult.id;
 						const briefInfo = topResult.briefInfo || {};
 
