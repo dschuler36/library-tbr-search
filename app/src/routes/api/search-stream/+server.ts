@@ -3,6 +3,54 @@ import type { RequestHandler } from './$types';
 import type { Book, SearchResult } from '$lib/types';
 import { isFormatExcluded } from '$lib/utils/formats';
 
+// Helper function to check if authors match (fuzzy matching)
+function authorsMatch(searchAuthor: string, resultAuthors: string[]): boolean {
+	if (!searchAuthor || !resultAuthors || resultAuthors.length === 0) {
+		return false;
+	}
+
+	// Normalize: lowercase, remove extra spaces, remove common suffixes
+	const normalizeAuthor = (author: string) => {
+		return author
+			.toLowerCase()
+			.replace(/\s+/g, ' ')
+			.trim()
+			.replace(/\s+(jr\.?|sr\.?|iii?|iv)$/i, ''); // Remove suffixes like Jr., Sr., III
+	};
+
+	// Convert "Last, First" to "First Last" format
+	const standardizeNameFormat = (author: string) => {
+		const normalized = normalizeAuthor(author);
+		// Check if it's in "Last, First" format
+		if (normalized.includes(',')) {
+			const parts = normalized.split(',').map(p => p.trim());
+			if (parts.length === 2) {
+				return `${parts[1]} ${parts[0]}`; // Convert to "First Last"
+			}
+		}
+		return normalized;
+	};
+
+	const searchStandardized = standardizeNameFormat(searchAuthor);
+
+	// Check if any result author matches
+	return resultAuthors.some(resultAuthor => {
+		const resultStandardized = standardizeNameFormat(resultAuthor);
+
+		// Exact match after standardization
+		if (searchStandardized === resultStandardized) return true;
+
+		// Last name match (e.g., "Williams" matches "John Williams")
+		const searchLastName = searchStandardized.split(' ').pop() || '';
+		const resultLastName = resultStandardized.split(' ').pop() || '';
+		if (searchLastName && resultLastName && searchLastName === resultLastName && searchLastName.length > 3) {
+			return true;
+		}
+
+		return false;
+	});
+}
+
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		let { books, selectedFormats = [] } = await request.json();
@@ -44,8 +92,23 @@ export const POST: RequestHandler = async ({ request }) => {
 					});
 
 					try {
-						// Search for the book
-						const searchResults = await client.search(`${book.title} ${book.authors}`, 10);
+						let searchResults = [];
+						let usedIsbn = false;
+
+						// Try ISBN search first if available (more accurate)
+						if (book.isbn && book.isbn.trim().length > 0) {
+							console.log(`  📖 Trying ISBN: ${book.isbn}`);
+							searchResults = await client.search(book.isbn, 5);
+							if (searchResults.length > 0) {
+								usedIsbn = true;
+							}
+						}
+
+						// If ISBN search failed or no ISBN, fall back to title + author
+						if (searchResults.length === 0) {
+							console.log(`  🔍 Trying title + author search`);
+							searchResults = await client.search(`${book.title} ${book.authors}`, 10);
+						}
 
 						if (searchResults.length === 0) {
 							console.log(`  ❌ Not found in catalog`);
@@ -54,10 +117,28 @@ export const POST: RequestHandler = async ({ request }) => {
 						}
 
 						// Filter by user-selected formats (also excludes DVDs and eBooks)
-						const acceptableResults = searchResults.filter((result: any) => {
+						let acceptableResults = searchResults.filter((result: any) => {
 							const format = result.briefInfo?.format || '';
 							return !isFormatExcluded(format, selectedFormats);
 						});
+
+						// If we used title + author search (not ISBN), validate author matches
+						if (!usedIsbn && acceptableResults.length > 0) {
+							const authorValidatedResults = acceptableResults.filter((result: any) => {
+								const resultAuthors = result.briefInfo?.authors || [];
+								const matches = authorsMatch(book.authors, resultAuthors);
+								if (!matches) {
+									console.log(`  ⚠️ Skipping "${result.briefInfo?.title}" by ${resultAuthors.join(', ')} (author mismatch)`);
+								}
+								return matches;
+							});
+
+							if (authorValidatedResults.length > 0) {
+								acceptableResults = authorValidatedResults;
+							} else {
+								console.log(`  ⚠️ No results matched the author "${book.authors}"`);
+							}
+						}
 
 						// If no acceptable results, skip this book
 						if (acceptableResults.length === 0) {

@@ -72,7 +72,7 @@
 <div class="card bg-base-100 shadow-xl">
 	<div class="card-body">
 		<h2 class="card-title">Upload Your TBR List</h2>
-		<p class="text-sm opacity-70">Upload a Storygraph CSV export to find books at your local library</p>
+		<p class="text-sm opacity-70">Upload a Storygraph or Goodreads CSV export to find books at your local library</p>
 
 		<button
 			type="button"
@@ -104,7 +104,7 @@
 					/>
 				</svg>
 				<div class="text-lg font-semibold mb-2">Click to upload or drag and drop</div>
-				<p class="text-sm opacity-70">Storygraph CSV export files only</p>
+				<p class="text-sm opacity-70">Storygraph or Goodreads CSV export files only</p>
 			{/if}
 		</button>
 

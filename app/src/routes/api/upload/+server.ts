@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { parseStoryGraphCSV } from '$lib/server/csv-parser';
+import { parseCSV } from '$lib/server/csv-parser';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -19,8 +19,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		// Read file content
 		let fileContent: string | null = await file.text();
 
-		// Parse CSV
-		const books = await parseStoryGraphCSV(fileContent);
+		// Parse CSV (auto-detects format)
+		const books = await parseCSV(fileContent);
 
 		// Explicitly clear file content to free memory
 		fileContent = null;

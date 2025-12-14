@@ -2,6 +2,8 @@
 
 A SvelteKit web app that helps you find which books from your Storygraph TBR (To Be Read) list are available at the Cincinnati & Hamilton County Public Library.
 
+![Library TBR Search Screenshot](screenshot.png)
+
 ## Features
 
 - 📤 **File Upload**: Drag & drop or browse to upload your Storygraph CSV export

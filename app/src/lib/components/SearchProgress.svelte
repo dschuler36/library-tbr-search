@@ -27,7 +27,7 @@
 
 		<div class="flex items-center gap-2 mt-4">
 			<span class="loading loading-spinner loading-sm"></span>
-			<span class="text-sm">Searching with rate limiting for API health...</span>
+			<span class="text-sm">Searching... This may take a few minutes due to rate limiting.</span>
 		</div>
 	</div>
 </div>

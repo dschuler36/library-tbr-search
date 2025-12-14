@@ -21,7 +21,8 @@
       "Bash(./node_modules/.bin/tailwindcss:*)",
       "Bash(npm uninstall:*)",
       "Bash(find:*)",
-      "Bash(npm run check:*)"
+      "Bash(npm run check:*)",
+      "WebFetch(domain:gist.github.com)"
     ]
   }
 }

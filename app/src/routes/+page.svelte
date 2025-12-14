@@ -132,7 +132,7 @@
 		<div class="text-center mb-8">
 			<h1 class="text-5xl font-bold mb-4">📚 Library TBR Search</h1>
 			<p class="text-lg opacity-80">
-				Find which books from your Storygraph TBR are available at
+				Find which books from your TBR are available at
 				Cincinnati Public Library.
 			</p>
 		</div>
@@ -147,11 +147,21 @@
 					<div class="card-body">
 						<h2 class="card-title text-xl mb-2">How to get started</h2>
 						<div class="prose prose-sm max-w-none">
+							<h3 class="text-base font-bold mt-4 mb-2">From Storygraph:</h3>
 							<ol class="list-decimal list-inside space-y-2 text-base opacity-80">
 								<li>Go to <a href="https://app.thestorygraph.com/user-export" target="_blank" class="link link-primary">app.thestorygraph.com/user-export</a></li>
 								<li>Click on <strong>Generate export</strong></li>
 								<li>Wait for the download link to become available</li>
 								<li>Download the CSV file</li>
+								<li>Upload it above!</li>
+							</ol>
+
+							<h3 class="text-base font-bold mt-4 mb-2">From Goodreads:</h3>
+							<ol class="list-decimal list-inside space-y-2 text-base opacity-80">
+								<li>Go to <a href="https://www.goodreads.com/review/import" target="_blank" class="link link-primary">goodreads.com/review/import</a></li>
+								<li>Click on <strong>Export Library</strong> at the bottom</li>
+								<li>Wait for the email with your export file</li>
+								<li>Download the CSV file from the email link</li>
 								<li>Upload it above!</li>
 							</ol>
 						</div>

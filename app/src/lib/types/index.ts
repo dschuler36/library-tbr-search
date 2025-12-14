@@ -2,6 +2,7 @@ export interface Book {
 	title: string;
 	authors: string;
 	isbn: string;
+	source?: 'storygraph' | 'goodreads';
 }
 
 export interface BranchAvailability {
